@@ -1,16 +1,31 @@
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+from inflection import titleize
 
 
-url = 'http://www.dailysmarty.com/topics/python'
+def titles_generator(links):
+    titles = []
 
-html_page = requests.get(url)
-# result = html_page.text
+    def post_formatter(url):
+        if 'posts' in url:
+            url = url.split('/')[-1]
+            url = url.replace('-', ' ')
+            url = titleize(url)
+            titles.append(url)
 
-soup = BeautifulSoup(html_page.text, 'html.parser')
 
-post_items = soup.find_all('a')
+    for link in links:
+        if link.get('href') == None:
+            continue
+        else:
+            post_formatter(link.get('href'))
 
+    return titles
 
-for post in post_items:
-    print(post.get('href'))
+r = requests.get('http://www.dailysmarty.com/topics/python')
+soup = BeautifulSoup(r.text, 'html.parser')
+links = soup.findAll('a')
+titles = titles_generator(links)
+
+for title in titles:
+    print(title)
